@@ -91,46 +91,48 @@ class Application(Application_ui):
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
         self.datas={}
+        self.config={}
         self.driver=None
+        self.cookies=None
+        self.showChrome=True
         self.driverInited=False
         self.configInited=False
-        self.showChrome=True
-        self.initDriver_thread=threading.Thread(target=self.initDriver)
         self.btnStates=[1,0,0,0,0,0]
-        self.config={}
+        self.initDriver_thread=threading.Thread(target=self.initDriver)
         setBtnStatus_thread=threading.Thread(target=self.setAllBtnStatus)
-        self.btChecherRunning=False
-        if  not self.btChecherRunning:
-            setBtnStatus_thread.start()
+        setBtnStatus_thread.start()
         self.loginfo("Init success,System Ready!")
         
     def setIconStatus(self):
-        if self.btnStates[0]==1:
-            self.CommandOpenChrome['state'] = 'normal'
-        else:
-            self.CommandOpenChrome['state'] = 'disable'
-            
-        if self.btnStates[1]==1:
-            self.CommandHeadlessChrome['state'] = 'normal'
-        else:
-            self.CommandHeadlessChrome['state'] = 'disable'
-        if self.btnStates[2]==1:
-            self.CommandCheckStatus['state'] = 'normal'
-        else:
-            self.CommandCheckStatus['state'] = 'disable'
-        if self.btnStates[3]==1:
-            self.CommandReadData['state'] = 'normal'
-        else:
-            self.CommandReadData['state'] = 'disable'
-        if self.btnStates[4]==1:
-            self.CommandReadFromCurrent['state'] = 'normal'
-        else:
-            self.CommandReadFromCurrent['state'] = 'disable'
-        if self.btnStates[5]==1:
-            self.CommandSaveData['state'] = 'normal'
-        else:
-            self.CommandSaveData['state'] = 'disable'
-        pass
+        try:
+            if self.btnStates[0]==1:
+                self.CommandOpenChrome['state'] = 'normal'
+            else:
+                self.CommandOpenChrome['state'] = 'disable'
+                
+            if self.btnStates[1]==1:
+                self.CommandHeadlessChrome['state'] = 'normal'
+            else:
+                self.CommandHeadlessChrome['state'] = 'disable'
+            if self.btnStates[2]==1:
+                self.CommandCheckStatus['state'] = 'normal'
+            else:
+                self.CommandCheckStatus['state'] = 'disable'
+            if self.btnStates[3]==1:
+                self.CommandReadData['state'] = 'normal'
+            else:
+                self.CommandReadData['state'] = 'disable'
+            if self.btnStates[4]==1:
+                self.CommandReadFromCurrent['state'] = 'normal'
+            else:
+                self.CommandReadFromCurrent['state'] = 'disable'
+            if self.btnStates[5]==1:
+                self.CommandSaveData['state'] = 'normal'
+            else:
+                self.CommandSaveData['state'] = 'disable'
+        except:
+            print("System down!")
+            exit()
         
         
         
@@ -220,17 +222,21 @@ class Application(Application_ui):
         self.loginfo("Loading driver")
         driver = webdriver.Chrome(options=chrome_options)
         driver.implicitly_wait(10)  # 设置隐式等待时间为10秒
-        if self.cookies:
+        self.driver=driver
+        self.driverInited=True
+        self.driver.get(loginurl)
+        if self.cookies or os.path.exists("cookies.txt"):
             # 加载并设置cookies
             with open("cookies.txt", "r") as file:
                 cookies = json.load(file)
                 for cookie in cookies:
                     driver.add_cookie(cookie)
-        self.driver=driver
-        self.driverInited=True
-        self.driver.get(loginurl)
+                    self.loginfo("add cookie:"+str(cookie))
+            self.driver.get(loginurl)
+        
         self.loginfo("Init driver sucess")
         self.btnStates=[0,1,1,1,1,1]
+        
 
 
     def CommandSaveData_Cmd(self, event=None):
@@ -252,6 +258,7 @@ class Application(Application_ui):
             self.driver.quit()
             self.cookies=cookies
         self.driverInited=False
+        self.initDriver_thread=threading.Thread(target=self.initDriver)
         self.initDriver_thread.start()
         pass
      
