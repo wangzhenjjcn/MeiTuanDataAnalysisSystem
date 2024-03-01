@@ -276,6 +276,14 @@ class Application(Application_ui):
 
     def CommandCheckStatus_Cmd(self, event=None):
         #TODO, Please finish the function here!
+        if self.driverInited:
+            cookies = self.driver.get_cookies()
+            with open("cookies.txt", "w") as file:
+                file.write(json.dumps(cookies))
+            self.cookies=cookies
+            self.loginfo("LoginStatusSaved")
+        else:
+            self.loginfo("ChromeErr")
         pass
 
     def CommandOpenChrome_Cmd(self, event=None):
